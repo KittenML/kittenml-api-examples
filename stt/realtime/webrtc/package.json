@@ -1,0 +1,13 @@
+{
+  "name": "kitten-asr-enhanced-realtime-browser-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "openai": "6.46.0"
+  }
+}

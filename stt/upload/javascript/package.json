@@ -1,0 +1,12 @@
+{
+  "name": "kittenml-upload-transcription-node-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node transcribe.mjs"
+  },
+  "dependencies": {
+    "dotenv": "17.4.2",
+    "openai": "6.46.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "kittenml-tts-node-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node upload/generate-speech.mjs",
+    "start:stream": "node streaming/stream-audio.mjs",
+    "start:sse": "node streaming/stream-sse.mjs",
+    "start:input": "node realtime/stream-input.mjs",
+    "start:voices": "node voices/list-voices.mjs"
+  },
+  "dependencies": {
+    "dotenv": "17.4.2",
+    "openai": "6.46.0",
+    "ws": "8.21.3"
+  }
+}
