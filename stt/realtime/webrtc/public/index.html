@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KittenASR Enhanced WebRTC</title>
+  <link rel="icon" href="data:,">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #172026;
+      background: #f5f8f7;
+      font: 16px/1.5 system-ui, sans-serif;
+    }
+    main { width: min(680px, 100%); }
+    h1 { margin: 0 0 8px; font-size: 36px; letter-spacing: 0; }
+    p { color: #5a6764; }
+    button {
+      min-width: 112px;
+      min-height: 44px;
+      margin: 12px 8px 16px 0;
+      border: 1px solid #087f73;
+      border-radius: 6px;
+      padding: 0 16px;
+      color: white;
+      background: #087f73;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { border-color: #a2adaa; background: #a2adaa; cursor: default; }
+    h2 { margin: 20px 0 6px; font-size: 18px; }
+    .transcript {
+      min-height: 220px;
+      margin: 0;
+      padding: 18px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      border: 1px solid #d2dcda;
+      border-radius: 6px;
+      background: white;
+      font-size: 22px;
+    }
+    #clean { min-height: 120px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Realtime transcription</h1>
+    <p id="status">Ready.</p>
+    <button id="start">Start mic</button>
+    <button id="stop" disabled>Stop</button>
+    <h2>Enriched transcript</h2>
+    <pre id="enriched" class="transcript" aria-live="polite">Press Start mic and begin speaking.</pre>
+    <h2>Clean transcript</h2>
+    <pre id="clean" class="transcript" aria-live="polite">Clean text appears here.</pre>
+  </main>
+
+  <script type="module">
+    const startButton = document.querySelector("#start");
+    const stopButton = document.querySelector("#stop");
+    const status = document.querySelector("#status");
+    const enriched = document.querySelector("#enriched");
+    const clean = document.querySelector("#clean");
+    let peer, events, stream;
+    let completedReceived = false;
+    let completedHasTranscript = false;
+    let speechDetected = false;
+
+    const reset = () => {
+      // Release microphone and peer resources before allowing another session.
+      stream?.getTracks().forEach(track => track.stop());
+      peer?.close();
+      startButton.disabled = false;
+      stopButton.disabled = true;
+    };
+
+    const waitForIce = connection => new Promise(resolve => {
+      // Signaling needs the complete local ICE candidate set in the SDP offer.
+      if (connection.iceGatheringState === "complete") return resolve();
+      const changed = () => {
+        if (connection.iceGatheringState === "complete") {
+          connection.removeEventListener("icegatheringstatechange", changed);
+          resolve();
+        }
+      };
+      connection.addEventListener("icegatheringstatechange", changed);
+    });
+
+    const handleEvent = event => {
+      // Partial text may be revised; replace the displayed snapshot rather than append it.
+      if (event.type === "conversation.item.input_audio_transcription.delta") {
+        speechDetected = true;
+        enriched.textContent = event.enriched_text || event.text || event.delta || "";
+        clean.textContent = event.clean_text || event.delta || "";
+      } else if (event.type === "input_audio_buffer.speech_started") {
+        speechDetected = true;
+      } else if (event.type === "conversation.item.input_audio_transcription.completed") {
+        completedReceived = true;
+        speechDetected = true;
+        const finalEnriched = event.enriched_text || event.text || event.transcript || "";
+        const finalClean = event.transcript || event.clean_text || "";
+        completedHasTranscript = Boolean(finalClean.trim() || finalEnriched.trim());
+        enriched.textContent = finalEnriched;
+        clean.textContent = finalClean;
+        status.textContent = completedHasTranscript ? "Finished." : "No speech detected.";
+        reset();
+      } else if (event.type === "session.closed") {
+        if (completedReceived) {
+          status.textContent = completedHasTranscript ? "Finished." : "No speech detected.";
+        } else if (speechDetected) {
+          status.textContent = "Closed before final transcript.";
+        } else {
+          status.textContent = "No speech detected.";
+        }
+        reset();
+      } else if (event.type === "error") {
+        // Production apps should also log event.error.code and event.request_id.
+        status.textContent = event.error?.message || "Transcription failed.";
+        reset();
+      }
+    };
+
+    startButton.onclick = async () => {
+      try {
+        startButton.disabled = true;
+        completedReceived = false;
+        completedHasTranscript = false;
+        speechDetected = false;
+        enriched.textContent = "";
+        clean.textContent = "";
+        status.textContent = "Requesting microphone access...";
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // The permanent API key stays in server.mjs. The browser receives only
+        // a short-lived credential immediately before opening this call.
+        const [tokenResponse, configResponse] = await Promise.all([
+          fetch("/api/realtime-token", { method: "POST" }),
+          fetch("/api/config"),
+        ]);
+        const token = await tokenResponse.json();
+        if (!tokenResponse.ok) {
+          const message = token.error?.message || "Could not create a temporary API token.";
+          const code = token.error?.code || "unknown_error";
+          const requestId = token.request_id || "unknown";
+          throw new Error(`${message} (code=${code}, request_id=${requestId})`);
+        }
+        const { apiBase } = await configResponse.json();
+
+        peer = new RTCPeerConnection({
+          iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }],
+        });
+        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        // Transcript events return over a data channel while microphone audio uses WebRTC media.
+        events = peer.createDataChannel("oai-events");
+        events.onopen = () => {
+          status.textContent = "Listening...";
+          stopButton.disabled = false;
+        };
+        events.onmessage = message => handleEvent(JSON.parse(message.data));
+        peer.onconnectionstatechange = () => {
+          if (["failed", "closed"].includes(peer.connectionState) && !startButton.disabled) return;
+          if (peer.connectionState === "failed") {
+            status.textContent = "WebRTC connection failed.";
+            reset();
+          }
+        };
+
+        await peer.setLocalDescription(await peer.createOffer());
+        await waitForIce(peer);
+        // Exchange the browser offer for the server answer using the temporary token.
+        const answerResponse = await fetch(`${apiBase}/realtime/calls`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+            "Content-Type": "application/sdp",
+          },
+          body: peer.localDescription.sdp,
+        });
+        if (!answerResponse.ok) {
+          const body = await answerResponse.text();
+          throw new Error(`WebRTC signaling failed (${answerResponse.status}): ${body}`);
+        }
+        await peer.setRemoteDescription({ type: "answer", sdp: await answerResponse.text() });
+      } catch (error) {
+        status.textContent = error.message || String(error);
+        reset();
+      }
+    };
+
+    stopButton.onclick = () => {
+      stopButton.disabled = true;
+      status.textContent = "Finishing...";
+      stream.getAudioTracks().forEach(track => { track.enabled = false; });
+      // Ask the server to flush the final transcript before closing the peer.
+      if (events?.readyState === "open") {
+        events.send(JSON.stringify({ type: "session.close" }));
+      }
+    };
+  </script>
+</body>
+</html>

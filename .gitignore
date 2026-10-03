@@ -1,0 +1,12 @@
+.env*
+!.env.example
+!**/.env.example
+.venv/
+__pycache__/
+node_modules/
+npm-debug.log*
+.DS_Store
+test-results/
+kitten-output*
+kitten-tts-*.wav
+tts/custom-voices/*-output.*
