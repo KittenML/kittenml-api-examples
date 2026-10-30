@@ -21,13 +21,12 @@ def main() -> None:
         raise SystemExit("Copy .env.example to .env and add KITTENML_API_KEY before running.")
 
     base_url = (os.environ.get("KITTENML_BASE_URL") or "https://api.kittenml.com/v1").rstrip("/")
-    built_in: list[dict] = []
-    custom: list[dict] = []
-    shared: dict[str, dict] = {}
+    public: dict[str, dict] = {}
+    saved: list[dict] = []
     after = None
     while True:
-        # Built-in and shared voices come back on every page; limit and after
-        # page only your custom voices.
+        # The public voices come back on every page; limit and after page only
+        # your saved voices.
         params = {"model": "kitten-tts-2-latest", "limit": 100}
         if after:
             params["after"] = after
@@ -42,12 +41,12 @@ def main() -> None:
                 catalog = json.load(response)
         except urllib.error.HTTPError as error:
             raise SystemExit(f"Voice list failed ({error.code}): {error.read().decode()}") from None
-        if not built_in:
-            built_in = [voice for voice in catalog["data"] if voice["type"] == "built_in"]
-        custom += [voice for voice in catalog["data"] if voice["type"] == "custom"]
-        shared.update(
-            (voice["id"], voice) for voice in catalog["data"] if voice["type"] == "public"
-        )
+        for voice in catalog["data"]:
+            if voice["type"] == "custom":
+                saved.append(voice)
+            else:
+                # Every other voice (type "public") is selected by its id string.
+                public[voice["id"]] = voice
         if not catalog.get("has_more"):
             break
         after = catalog["last_custom_id"]
@@ -55,21 +54,18 @@ def main() -> None:
     languages = [row["code"] for row in catalog["languages"]]
     print(f"model: {catalog['model']}")
     print(f"languages: {', '.join(languages)}")
-    # Pass a built-in voice's id as the request's voice value; its name is the title.
-    print(f"built-in voices: {len(built_in)}")
-    for voice in built_in:
+    # Public voices are the ones KittenML makes available to every organization.
+    # Send the id as the voice string, for example "voice": "frank_en".
+    print(f"public voices: {len(public)} (send the id as the voice string)")
+    for voice in public.values():
         print(f"- {voice['id']} \"{voice['name']}\" [{voice['language']}]")
-    # Pass a custom voice as {"id": "voice_..."}; its name is only a display label.
-    print(f"custom voices: {len(custom)}")
-    for voice in custom:
-        print(f"- {voice['id']} \"{voice['name']}\" [{voice['language']}]")
-    # Shared voices are ones KittenML makes available to every organization.
-    # Pass them like custom voices, as {"id": "voice_..."}.
-    print(f"shared voices: {len(shared)}")
-    for voice in shared.values():
+    # Saved voices are your organization's own. Send one as an object,
+    # "voice": {"id": "voice_..."}; its name is only a display label.
+    print(f"saved voices: {len(saved)} (send as {{\"id\": \"voice_...\"}})")
+    for voice in saved:
         print(f"- {voice['id']} \"{voice['name']}\" [{voice['language']}]")
     if catalog.get("public_voices_unavailable"):
-        print("note: shared voices could not be read this time; retry to see them.")
+        print("note: the public voices could not be read this time; retry to see them.")
     print(f"request_id: {request_id}")
 
 

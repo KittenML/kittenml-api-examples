@@ -27,7 +27,11 @@ def main() -> None:
         api_key=api_key,
         base_url=os.environ.get("KITTENML_BASE_URL") or "https://api.kittenml.com/v1",
     )
-    voice = os.environ.get("KITTENML_TTS_VOICE") or "eleanor_somber_female_32"
+    voice = os.environ.get("KITTENML_TTS_VOICE") or "eleanor_en"
+    if voice.startswith("voice_"):
+        # A saved voice is sent as an object; a bare "voice_..." string is
+        # rejected with 400 invalid_voice.
+        voice = {"id": voice}
     for name, controls in TAKES.items():
         output = here / f"kitten-output-{name}.mp3"
         # The OpenAI SDK has no parameters for these fields, so extra_body adds them to the JSON.

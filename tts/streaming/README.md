@@ -31,9 +31,15 @@ python streaming/stream_sse.py
 node streaming/stream-sse.mjs
 ```
 
-All four use Kitten TTS 2 with the `eleanor_somber_female_32` voice unless
+All four use Kitten TTS 2 with the `eleanor_en` voice unless
 `KITTENML_TTS_MODEL` or `KITTENML_TTS_VOICE` is set; see
 [Pick a voice](../README.md#pick-a-voice).
+
+For live playback, start with a buffer of at least 200 ms, or about 350 ms for
+text with emotion markup, and adapt it to what you observe. Short gaps are more
+likely when many streams run at once. For quality over speed, send
+`"stream": false` instead and get one complete file; see
+[`../upload/`](../upload/).
 
 The examples save their outputs under `tts/streaming/`. Treat a stream that
 ends without its terminal event as incomplete. Successful runs print the

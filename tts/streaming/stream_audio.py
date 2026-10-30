@@ -18,10 +18,14 @@ def main() -> None:
         base_url=os.environ.get("KITTENML_BASE_URL") or "https://api.kittenml.com/v1",
     )
     model = os.environ.get("KITTENML_TTS_MODEL") or "kitten-tts-2-latest"
-    # Kitten TTS 2 voices are numbered labels; the 0.8 models use Bella and friends.
+    # Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
     voice = os.environ.get("KITTENML_TTS_VOICE") or (
-        "Bella" if model.endswith("-0.8") else "eleanor_somber_female_32"
+        "Bella" if model.endswith("-0.8") else "eleanor_en"
     )
+    if voice.startswith("voice_"):
+        # A saved voice is sent as an object; a bare "voice_..." string is
+        # rejected with 400 invalid_voice.
+        voice = {"id": voice}
     output = here / "kitten-output-stream.mp3"
     # The streaming context exposes headers before it copies response chunks to disk.
     with client.audio.speech.with_streaming_response.create(

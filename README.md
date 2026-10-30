@@ -32,7 +32,7 @@ application.
 
 - **Complete and streaming TTS** — generate MP3, WAV, FLAC, AAC, Opus, or PCM, as one response or as it is generated.
 - **Input-streaming TTS** — send text fragments and receive PCM over one WebSocket.
-- **Voice discovery** — list the Kitten TTS 2 voices, their languages, and your saved and shared voices.
+- **Voice discovery** — list the Kitten TTS 2 public voices, their languages, and your saved voices, or find voices by language, gender, use case, and tone.
 - **Decoding controls** — compare the Kitten TTS 2 `stable` and `expressive` presets.
 - **Voice cloning** — one-request references and saved voices are covered in the [cloning guide](https://docs.kittenml.com/tts/custom-voices).
 
@@ -60,7 +60,7 @@ https://api.kittenml.com
 | --- | --- | --- |
 | HTTPS | `POST /v1/audio/speech` | Generate complete audio or stream its output |
 | WebSocket | `WSS /v1/tts/realtime` | Send incremental text and receive PCM audio |
-| HTTPS | `GET /v1/voices?model=kitten-tts-2-latest` | List Kitten TTS 2 voices and your saved and shared voices |
+| HTTPS | `GET /v1/voices?model=kitten-tts-2-latest` | List the Kitten TTS 2 public voices and your saved voices |
 | HTTPS | `POST /v1/audio/transcriptions` | Transcribe a complete audio file |
 | WebSocket | `WSS /v1/realtime` | Stream PCM and receive partial transcripts |
 | WebRTC | `POST /v1/realtime/client_secrets`, then `POST /v1/realtime/calls` | Stream a browser microphone |
@@ -95,7 +95,7 @@ curl -L --fail-with-body -sS \
   --data '{
     "model": "kitten-tts-2-latest",
     "input": "Hello from the KittenML API.",
-    "voice": "eleanor_somber_female_32",
+    "voice": "eleanor_en",
     "response_format": "mp3",
     "speed": 1.0
   }' \
@@ -127,7 +127,7 @@ curl -L --fail-with-body -sS \
 | Python or Node.js | Complete text-to-speech response | [`tts/upload/`](tts/upload/) |
 | Python or Node.js | Stream output from complete text | [`tts/streaming/`](tts/streaming/) |
 | Python or Node.js | Stream text input and audio output | [`tts/realtime/`](tts/realtime/) |
-| Python or Node.js | List available voices | [`tts/voices/`](tts/voices/) |
+| Python or Node.js | List or filter available voices | [`tts/voices/`](tts/voices/) |
 | Python or Node.js | Compare Kitten TTS 2 decoding presets | [`tts/controls/`](tts/controls/) |
 | cURL, Python, or Node.js | Complete audio file | [`stt/upload/`](stt/upload/) |
 | Python | Prerecorded PCM over WebSocket | [`stt/realtime/python`](stt/realtime/python/) |
@@ -146,7 +146,7 @@ For pricing, see the [KittenML platform](https://platform.kittenml.com).
 
 | Model | Relative size | Start here when… |
 | --- | ---: | --- |
-| `kitten-tts-2-latest` | 1.7B parameters (ternary) | You want the latest model: 47 voices across ten languages |
+| `kitten-tts-2-latest` | 1.7B parameters (ternary) | You want the latest model: 173 voices across 20 languages |
 | `kitten-tts-nano-0.8` | 15M parameters | You want the smallest model |
 | `kitten-tts-micro-0.8` | 40M parameters | You want a balanced default |
 | `kitten-tts-mini-0.8` | 80M parameters | You prioritize voice quality |
@@ -155,9 +155,9 @@ Voices belong to a model. Kitten TTS 2 voices are selected by voice ID, for
 example:
 
 ```text
-eleanor_somber_female_32
-maeve_cozy_female_22
-spanish_41
+eleanor_en
+maeve_en
+diego_es
 ```
 
 List all of them with `GET /v1/voices?model=kitten-tts-2-latest`, or see
@@ -250,6 +250,11 @@ over-limit realtime WebSocket upgrades, emits an `error` event with
 `error.code: "rate_limit_exceeded"`, and closes; classify it using the event
 code and retry with backoff and jitter.
 
+Separately, a Kitten TTS 2 request that arrives while generation capacity is
+momentarily full can wait up to about 8 seconds before its audio starts. If no
+slot frees up in that time, it returns `503` with `Retry-After`; retry with
+backoff. See [Rate limits and timeouts](https://docs.kittenml.com/rate-limits).
+
 ---
 
 ## Requirements
@@ -266,7 +271,7 @@ code and retry with backoff and jitter.
 - [API documentation](https://docs.kittenml.com/)
 - [KittenML website](https://kittenml.com/)
 - [Discord community](https://discord.com/invite/VJ86W4SURW)
-- [GitHub issues](https://github.com/haaziq-sl/kittenml-api-examples/issues)
+- [GitHub issues](https://github.com/KittenML/kittenml-api-examples/issues)
 
 Test it. Break it. Roast it. When reporting a problem, include the request ID,
 language, accent, and audio conditions—but never include API keys or sensitive

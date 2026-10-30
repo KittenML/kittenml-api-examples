@@ -7,7 +7,8 @@
     "start:stream": "node streaming/stream-audio.mjs",
     "start:sse": "node streaming/stream-sse.mjs",
     "start:input": "node realtime/stream-input.mjs",
-    "start:voices": "node voices/list-voices.mjs"
+    "start:voices": "node voices/list-voices.mjs",
+    "start:find-voices": "node voices/find-voices.mjs"
   },
   "dependencies": {
     "dotenv": "17.4.2",

@@ -13,9 +13,10 @@ const baseURL = (process.env.KITTENML_BASE_URL || "https://api.kittenml.com/v1")
   .replace(/^http:/, "ws:")
   .replace(/\/$/, "");
 const model = process.env.KITTENML_TTS_MODEL || "kitten-tts-2-latest";
-// Kitten TTS 2 voices are numbered labels; the 0.8 models use Bella and friends.
+// Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
+// A saved voice's "voice_..." ID goes in the query as it is, not as an object.
 const voice = process.env.KITTENML_TTS_VOICE ||
-  (model.endsWith("-0.8") ? "Bella" : "eleanor_somber_female_32");
+  (model.endsWith("-0.8") ? "Bella" : "eleanor_en");
 // URLSearchParams escapes the spaces and dashes in voice names.
 const query = new URLSearchParams({ model, voice, speed: "1", response_format: "pcm" });
 const url = `${baseURL}/tts/realtime?${query}`;

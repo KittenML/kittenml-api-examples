@@ -17,10 +17,14 @@ def main() -> None:
 
     base_url = (os.environ.get("KITTENML_BASE_URL") or "https://api.kittenml.com/v1").rstrip("/")
     model = os.environ.get("KITTENML_TTS_MODEL") or "kitten-tts-2-latest"
-    # Kitten TTS 2 voices are numbered labels; the 0.8 models use Bella and friends.
+    # Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
     voice = os.environ.get("KITTENML_TTS_VOICE") or (
-        "Bella" if model.endswith("-0.8") else "eleanor_somber_female_32"
+        "Bella" if model.endswith("-0.8") else "eleanor_en"
     )
+    if voice.startswith("voice_"):
+        # A saved voice is sent as an object; a bare "voice_..." string is
+        # rejected with 400 invalid_voice.
+        voice = {"id": voice}
     # SSE is useful when the application needs typed audio-delta events.
     body = json.dumps(
         {
@@ -76,6 +80,15 @@ def main() -> None:
                 completed = True
                 elapsed_ms = (time.monotonic() - started) * 1_000
                 print(f"speech.audio.done at +{elapsed_ms:.0f} ms", flush=True)
+                # With Kitten TTS 2, usage reports the characters processed and the
+                # seconds of audio generated; its token fields are always 0.
+                usage = event.get("usage") or {}
+                if "audio_seconds" in usage:
+                    print(
+                        f"usage: {usage.get('input_characters')} characters, "
+                        f"{usage['audio_seconds']} s of audio",
+                        flush=True,
+                    )
             elif event.get("type") == "error":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}
                 code = error.get("code") or "unknown_error"

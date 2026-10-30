@@ -44,7 +44,7 @@ curl -L --fail-with-body -sS \
   --data '{
     "model": "kitten-tts-2-latest",
     "input": "The harbor lights came on one by one.",
-    "voice": "maeve_cozy_female_22",
+    "voice": "maeve_en",
     "mode": "expressive",
     "top_k": 40
   }' \

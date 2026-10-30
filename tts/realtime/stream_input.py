@@ -19,9 +19,10 @@ def main() -> None:
 
     base_url = os.environ.get("KITTENML_BASE_URL") or "https://api.kittenml.com/v1"
     model = os.environ.get("KITTENML_TTS_MODEL") or "kitten-tts-2-latest"
-    # Kitten TTS 2 voices are numbered labels; the 0.8 models use Bella and friends.
+    # Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
+    # A saved voice's "voice_..." ID goes in the query as it is, not as an object.
     voice = os.environ.get("KITTENML_TTS_VOICE") or (
-        "Bella" if model.endswith("-0.8") else "eleanor_somber_female_32"
+        "Bella" if model.endswith("-0.8") else "eleanor_en"
     )
     websocket_base = base_url.replace("https://", "wss://").replace("http://", "ws://")
     # urlencode escapes the spaces and dashes in voice names.

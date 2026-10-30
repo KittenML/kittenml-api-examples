@@ -13,9 +13,12 @@ const client = new OpenAI({
   baseURL: process.env.KITTENML_BASE_URL || "https://api.kittenml.com/v1",
 });
 const model = process.env.KITTENML_TTS_MODEL || "kitten-tts-2-latest";
-// Kitten TTS 2 voices are numbered labels; the 0.8 models use Bella and friends.
-const voice = process.env.KITTENML_TTS_VOICE ||
-  (model.endsWith("-0.8") ? "Bella" : "eleanor_somber_female_32");
+// Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
+const voiceName = process.env.KITTENML_TTS_VOICE ||
+  (model.endsWith("-0.8") ? "Bella" : "eleanor_en");
+// A saved voice is sent as an object; a bare "voice_..." string is rejected
+// with 400 invalid_voice.
+const voice = voiceName.startsWith("voice_") ? { id: voiceName } : voiceName;
 // withResponse() exposes x-request-id while data remains the SDK audio response.
 const { data: audio, request_id: requestId } = await client.audio.speech.create({
   model,
