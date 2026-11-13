@@ -88,17 +88,18 @@ send it when `KITTENML_TTS_STREAM=false` is set.
 ## Pick a kitten
 
 - `kitten-tts-2-latest` — Kitten TTS 2, the latest model, with 173 voices
-- `kitten-tts-nano-0.8`
-- `kitten-tts-micro-0.8`
+- `kitten-tts-2-mini`, `kitten-tts-2-nano`, `kitten-tts-2-pico` — small and fast, with their own voices
 - `kitten-tts-mini-0.8`
 
 Kitten TTS 2 can also clone a voice; see the
 [cloning guide](https://docs.kittenml.com/tts/custom-voices).
 
-All four models use the same request shape. Voices belong to a
-model: Kitten TTS 2 uses the voice IDs below, and the three 0.8 models
-use `Bella`, `Jasper`, `Luna`, `Bruno`, `Rosie`, `Hugo`, `Kiki`, and `Leo`.
-Start with Kitten TTS 2, then let Nano and Micro surprise you.
+All five models use the same request shape. Voices belong to a
+model: Kitten TTS 2 uses the voice IDs below; Mini, Nano and Pico have their
+own, such as `eleanor_en` or `lena_de` (list them with
+`GET /v1/voices?model=kitten-tts-2-mini`); and the 0.8 model uses `Bella`,
+`Jasper`, `Luna`, `Bruno`, `Rosie`, `Hugo`, `Kiki`, and `Leo`.
+Start with Kitten TTS 2, then let Nano and Pico surprise you.
 
 Non-streaming requests (`stream: false`) return at most 30 minutes of audio.
 If the text would run longer, the file ends at the last complete sentence chunk
@@ -266,15 +267,16 @@ little-endian data. Other formats stream the matching encoded format.
 # Run the same request shape against each supported model.
 for MODEL in \
   kitten-tts-2-latest \
-  kitten-tts-nano-0.8 \
-  kitten-tts-micro-0.8 \
+  kitten-tts-2-mini \
+  kitten-tts-2-nano \
+  kitten-tts-2-pico \
   kitten-tts-mini-0.8
 do
   # Each model has its own voices.
-  if [ "$MODEL" = "kitten-tts-2-latest" ]; then
-    VOICE="eleanor_en"
-  else
+  if [ "$MODEL" = "kitten-tts-mini-0.8" ]; then
     VOICE="Bella"
+  else
+    VOICE="eleanor_en"
   fi
   # Keep each result separate so you can compare quality and latency.
   curl -L --fail-with-body -sS \

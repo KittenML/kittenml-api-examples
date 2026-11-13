@@ -141,15 +141,16 @@ examples run without sourcing audio first.
 
 ## Text to speech
 
-Kitten TTS 2 and the three KittenTTS 0.8 models use the same endpoint.
+Kitten TTS 2, Kitten TTS 2 Mini, Nano and Pico, and KittenTTS 0.8 Mini use the same endpoint.
 For pricing, see the [KittenML platform](https://platform.kittenml.com).
 
 | Model | Relative size | Start here when… |
 | --- | ---: | --- |
 | `kitten-tts-2-latest` | 1.7B parameters (ternary) | You want the latest model: 173 voices across 20 languages |
-| `kitten-tts-nano-0.8` | 15M parameters | You want the smallest model |
-| `kitten-tts-micro-0.8` | 40M parameters | You want a balanced default |
-| `kitten-tts-mini-0.8` | 80M parameters | You prioritize voice quality |
+| `kitten-tts-2-mini` | 82M parameters | You want a small, fast model in 16 languages |
+| `kitten-tts-2-nano` | 17M parameters per language | You want a smaller model, 8 languages |
+| `kitten-tts-2-pico` | 7M parameters per language | You want the smallest model, 8 languages |
+| `kitten-tts-mini-0.8` | 80M parameters | You want the voices of the KittenTTS SDKs |
 
 Voices belong to a model. Kitten TTS 2 voices are selected by voice ID, for
 example:
