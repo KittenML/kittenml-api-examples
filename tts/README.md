@@ -1,8 +1,10 @@
 # Generate speech
 
-Four models. 173 Kitten TTS 2 voices in 20 languages. One simple request. Use
+Five models. 173 Kitten TTS 2 voices in 20 languages. One simple request. Use
 `POST /v1/audio/speech` to generate speech with Kitten TTS 2
-(`kitten-tts-2-latest`) or any of the three KittenTTS 0.8 models.
+(`kitten-tts-2-latest`), Kitten TTS 2 Mini, Nano and Pico
+(`kitten-tts-2-mini`, `kitten-tts-2-nano`, `kitten-tts-2-pico`) or KittenTTS 0.8
+Mini (`kitten-tts-mini-0.8`).
 A valid KittenML API key keeps usage attached to your organization. For
 pricing, see the [KittenML platform](https://platform.kittenml.com).
 

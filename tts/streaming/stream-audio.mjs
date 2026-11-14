@@ -13,7 +13,7 @@ const client = new OpenAI({
   baseURL: process.env.KITTENML_BASE_URL || "https://api.kittenml.com/v1",
 });
 const model = process.env.KITTENML_TTS_MODEL || "kitten-tts-2-latest";
-// Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
+// Kitten TTS 2 voice IDs look like eleanor_en; KittenTTS 0.8 Mini uses Bella and friends.
 const voiceName = process.env.KITTENML_TTS_VOICE ||
   (model.endsWith("-0.8") ? "Bella" : "eleanor_en");
 // A saved voice is sent as an object; a bare "voice_..." string is rejected

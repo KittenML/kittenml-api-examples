@@ -162,7 +162,7 @@ diego_es
 ```
 
 List all of them with `GET /v1/voices?model=kitten-tts-2-latest`, or see
-[Pick a voice](tts/README.md#pick-a-voice). The three 0.8 models share eight
+[Pick a voice](tts/README.md#pick-a-voice). KittenTTS 0.8 Mini has eight
 voices:
 
 ```text

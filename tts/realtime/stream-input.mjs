@@ -13,7 +13,7 @@ const baseURL = (process.env.KITTENML_BASE_URL || "https://api.kittenml.com/v1")
   .replace(/^http:/, "ws:")
   .replace(/\/$/, "");
 const model = process.env.KITTENML_TTS_MODEL || "kitten-tts-2-latest";
-// Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
+// Kitten TTS 2 voice IDs look like eleanor_en; KittenTTS 0.8 Mini uses Bella and friends.
 // A saved voice's "voice_..." ID goes in the query as it is, not as an object.
 const voice = process.env.KITTENML_TTS_VOICE ||
   (model.endsWith("-0.8") ? "Bella" : "eleanor_en");

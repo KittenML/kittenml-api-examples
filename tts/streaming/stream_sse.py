@@ -17,7 +17,7 @@ def main() -> None:
 
     base_url = (os.environ.get("KITTENML_BASE_URL") or "https://api.kittenml.com/v1").rstrip("/")
     model = os.environ.get("KITTENML_TTS_MODEL") or "kitten-tts-2-latest"
-    # Kitten TTS 2 voice IDs look like eleanor_en; the 0.8 models use Bella and friends.
+    # Kitten TTS 2 voice IDs look like eleanor_en; KittenTTS 0.8 Mini uses Bella and friends.
     voice = os.environ.get("KITTENML_TTS_VOICE") or (
         "Bella" if model.endswith("-0.8") else "eleanor_en"
     )

@@ -136,8 +136,9 @@ If the public voices cannot be read, the response still lists your saved
 voices and sets `public_voices_unavailable` to `true`; both programs print a
 note and you can retry.
 
-Only Kitten TTS 2 has a voice catalog here; a KittenTTS 0.8 model ID returns
-`404 model_not_found`. The three 0.8 models use the fixed voices `Bella`,
+Kitten TTS 2 and Kitten TTS 2 Mini, Nano and Pico have voice catalogs here; a
+KittenTTS 0.8 model ID returns `404 model_not_found`. KittenTTS 0.8 Mini uses
+the fixed voices `Bella`,
 `Jasper`, `Luna`, `Bruno`, `Rosie`, `Hugo`, `Kiki`, and `Leo`.
 
 See [List voices](https://docs.kittenml.com/tts/list-voices) for the complete
