@@ -23,7 +23,10 @@ const client = new OpenAI({
   apiKey,
   baseURL: process.env.KITTENML_BASE_URL || "https://api.kittenml.com/v1",
 });
-const voice = process.env.KITTENML_TTS_VOICE || "eleanor_somber_female_32";
+const voiceName = process.env.KITTENML_TTS_VOICE || "eleanor_en";
+// A saved voice is sent as an object; a bare "voice_..." string is rejected
+// with 400 invalid_voice.
+const voice = voiceName.startsWith("voice_") ? { id: voiceName } : voiceName;
 for (const [name, controls] of Object.entries(takes)) {
   // The SDK sends body fields it has no types for unchanged.
   const { data: audio, request_id: requestId } = await client.audio.speech.create({

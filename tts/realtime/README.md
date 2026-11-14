@@ -19,10 +19,18 @@ python realtime/stream_input.py
 node realtime/stream-input.mjs
 ```
 
-Both use Kitten TTS 2 with the `eleanor_somber_female_32` voice unless
+Both use Kitten TTS 2 with the `eleanor_en` voice unless
 `KITTENML_TTS_MODEL` or `KITTENML_TTS_VOICE` is set, and URL-encode the voice
 into the connection's query string; see
-[Pick a voice](../README.md#pick-a-voice).
+[Pick a voice](../README.md#pick-a-voice). A saved voice's `voice_...` ID goes
+in the query as it is.
+
+For Kitten TTS 2, the query also accepts `normalize` (`basic`, `smart`, or
+`no`) and the [decoding controls](../controls/), such as
+`&mode=expressive&top_k=40`; they apply to every phrase of the session.
+Emotion and sound tags work in the appended text too. Send
+`{"type":"input_text.commit"}` to speak all buffered text while keeping the
+session open, and `{"type":"input_text.done"}` after the final fragment.
 
 Both examples concatenate Base64 `speech.audio.delta` payloads and save
 headerless 24 kHz mono PCM16 under `tts/realtime/`. A final
